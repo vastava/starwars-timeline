@@ -104,8 +104,8 @@ d3.csv("starwars - Sheet6.csv", function(data) {
 	 canonEvents.append("line")
 	 	.attr("x1", xOrd("0")-100)
 	 	.attr("x2", xOrd("0")+100)  
-	 	.attr("y1", 0)
-	 	.attr("y2", 0) 
+	 	.attr("y1", 10)
+	 	.attr("y2", 10) 
 	 	.attr("stroke", "red")
 	 	.attr("stroke-width", 0.5)
 	 	.attr("transform", "translate(" + -sz*0.25/2 + ", 0)")	
@@ -113,7 +113,7 @@ d3.csv("starwars - Sheet6.csv", function(data) {
 	 canonEvents.append("text")
 	 	.text("Battle of Yavin (0 BBY)")
 	 	.attr("x", xOrd("0"))	 	 	
-	 	.attr("y", 0-5)
+	 	.attr("y", 0+5)
 	 	.attr("fill", "white")
 	 	.attr("text-anchor", "middle")
 	 	.attr("font-size", "15px")
@@ -124,6 +124,79 @@ d3.csv("starwars - Sheet6.csv", function(data) {
 	 	.attr("y", 0-5)
 	 	.attr("fill", "white")
 	 	// .attr("text-anchor", "middle")
-	 	.attr("font-size", "25px")	
+	 	.attr("font-size", "25px")
+
+//draw horizontal legend
+	const spacingBetweenLegend  = 10
+	var timeMarginLeft = 8;
+    const legend = canonEvents.append('g')
+      .attr('class', 'legend')
+      .attr('transform', 'translate(0,0)')
+
+    const lg = legend.selectAll('g')
+      .data(eras)
+      .enter()
+      .append('g')
+
+    lg.append('rect')
+      .style('fill', d => color(d))
+      .attr('x', 8)
+      .attr('y', -timeMargin.top-10)
+      .attr('height', 10)
+      .attr('width', 10)
+      // .attr('cx', 8)
+      // .attr('cy', -timeMargin.top-4)
+      // .attr('r', 5)
+
+    lg.append('text')
+      .style('font-size', '12px')
+      .attr('x', 25)
+      .attr('y', -timeMargin.top)
+      .attr('fill', 'white')
+      .text(d => d)
+
+    const nodeWidth = (d) => d.getBBox().width
+
+    var x_min;
+    let offset = 0
+    lg.each(function(d, i) {
+      const x = offset
+      offset += nodeWidth(this) + 10
+      x_min = x;
+    });
+
+    var nextLine = (timeWidth - 2*timeMargin.left - 2*timeMargin.right) < x_min;
+    var target;
+    if (window.innerWidth <= 800) {
+        target = timeWidth - timeMargin.left
+    } else {
+        target =  timeWidth / 1.6;
+    }
+
+    timeMarginLeft = nextLine == true? timeMarginLeft: 0;
+    offset = timeMarginLeft;
+    var yValue = 10;
+
+    lg.attr('transform', function(d, i) {
+      var x = offset      
+      offset += nodeWidth(this) + spacingBetweenLegend
+      var ret;
+      if(offset >= target && nextLine) {
+          offset = nodeWidth(this) + spacingBetweenLegend + timeMarginLeft;
+          yValue +=20;
+          ret = `translate(${ timeMarginLeft }, ${yValue})`
+      } else {
+          ret = `translate(${x}, ${yValue})`
+      }
+      return  ret;
+    })
+
+    legend.attr('transform', function() {
+        if(window.innerWidth < 400 && nextLine) {
+            return `translate(${(timeWidth - nodeWidth(this)) /  2},${-20})`
+        } else {
+            return `translate(${(timeWidth - nodeWidth(this)) /  2},${0})`
+        }
+    })   	 		
 
 })	
