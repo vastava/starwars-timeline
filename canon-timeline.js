@@ -1,7 +1,7 @@
 // set the dimensions and timeMargins of the graph
-var timeMargin = {top: 30, right: 30, bottom: 30, left: 30},
+var timeMargin = {top: 30, right: 30, bottom: 0, left: 30},
     timeWidth = window.screen.width - timeMargin.left - timeMargin.right,
-    timeHeight = (100 - timeMargin.top - timeMargin.bottom)*8;
+    timeHeight = (100 - timeMargin.top - timeMargin.bottom)*8 - 30*9;
 
 // append the canonTimeline object to the body of the page
 var canonTimeline = d3.select("#my_dataviz")
@@ -112,6 +112,7 @@ for (i = 0; i<= 3; i++) {
     .attr("fill", function(d) {return color(d.era_label)})
     .attr("tranform", "translate(1,100)")
 
+  var offsetEras = ["Fall of the Old Republic", "Rise of the Galactic Republic", "Thereafter"];
   canonTimeline.selectAll("myText")
     .data(data)
     .enter()
@@ -119,12 +120,19 @@ for (i = 0; i<= 3; i++) {
     .text(function(d) {return d['sub-sub-era']})
     .attr("x", function(d) {return x[d.Section](d.start)-5} )
     .attr("x", function(d) {
-    	if (!isLabelRight(d.start, d.end, x[d.Section])) {
-    		return x[d.Section](d.start)-5; 
-    	}
-    	else {
-			return (x[d.Section](d.end) + x[d.Section](d.start))/2 -5;
-    	}
+      if (offsetEras.includes(d['sub-sub-era'])) {
+        if (d['sub-sub-era'] == "Fall of the Old Republic") {
+          return (x[d.Section](d.end) + x[d.Section](d.start))/2 -5;
+        }
+        return x[d.Section](d.start)+35      
+      }
+      return x[d.Section](d.start)-5
+   //  	if (!isLabelRight(d.start, d.end, x[d.Section])) {
+   //  		return x[d.Section](d.start)-5; 
+   //  	}
+   //  	else {
+			// return (x[d.Section](d.end) + x[d.Section](d.start))/2 -5;
+   //  	}
     })
     .attr("font-size", "10px")
     .attr("y", function(d, i) {
