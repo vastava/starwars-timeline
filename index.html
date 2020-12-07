@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<!-- Create a div where the graph will take place -->
+<h1>Star Wars Canon Timeline</h1>
+<p><i>Hover over a section of the timeline for a more detailed picture.</i></p>
+<div id="my_dataviz"></div>
+<p>The Star Wars saga, at a glance</p>
+<div id="events_timeline"></div>
+<style>
+@import url(https://fonts.googleapis.com/css?family=News+Cycle:400,700);
+
+body {
+  background: black;
+  background-image: url('https://prod-ripcut-delivery.disney-plus.net/v1/variant/disney/A11FF0C824A45B7D466AA336DC07F3D5AEF32E94A8E31ED9E6FEC67551C744CA/scale?aspectRatio=1.78&format=jpeg');
+  background-size: 100%;
+  font: "News Cycle", sans-serif;
+}
+
+text {
+	/*fill: white;*/
+	/*font-family: Helvetica, sans-serif;*/
+	font-family: "News Cycle", sans-serif;
+	font-weight: bold;
+}
+
+h1, p {
+	fill: white;
+	color: white;
+	font-family: "News Cycle", sans-serif;
+}
+
+.axis line {
+  fill: white;
+  /*stroke: #000;*/
+  stroke: white;
+  /*shape-rendering: crispEdges;*/
+}
+
+.axis text {
+  fill: white;
+}
+
+.axis path {
+  /*fill: white;*/
+}
+
+</style>
+<script type="text/javascript" src="canon-timeline.js"></script>
+<script>
+var eventMargin = {top: 30, right: 30, bottom: 30, left: 30},
+    eventWidth = window.screen.width - eventMargin.left - eventMargin.right,
+    eventHeight = (100 - eventMargin.top - eventMargin.bottom)*8;
+
+// append the canonTimeline object to the body of the page
+var svg = d3.select("#events_timeline")
+  .append("svg")
+    .attr("width", eventWidth + eventMargin.left + eventMargin.right)
+    .attr("height", eventHeight + eventMargin.top + eventMargin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + eventMargin.left + "," + eventMargin.top + ")");
+
+// Parse the Data
+d3.csv("starwars - Sheet6.csv", function(data) {
+
+	console.log(data)	
+	var formatDate = d=> d < 0 ? `${d3.format(",")(-d)} BBY` : `${d} ABY`
+
+	var num_cols = 1;
+
+	var sumstat = d3.nest() // nest function allows to group the calculation per level of a factor
+	.key(function(d) { return d.era;})
+	.entries(data);
+	// data = data.filter(function(d) {return d.Section == 0})
+	var eras = sumstat.map(function(d){return d.key});    
+
+	var swcolors = ["#D7C078", "#E7250A","#0087E9","#5AC2F0", "#32E6AC", "#AF639E", "#343D9C"]
+	var color = d3.scaleOrdinal()
+			.domain(eras)
+			// .range(["red", "orange", "yellow", "green", "blue", "purple"])
+			.range(swcolors)	
+	// data = data.filter(function(d) {return +d.start <= -5000 })	
+	// data = data.filter(function(d) {return +d.start >= -20 })	
+
+	console.log(d3.set(data.map(function(d) {return d.start})).values())
+
+	var years = d3.set(data.map(function(d) {return d.start})).values();
+
+	var xOrd = d3.scaleBand()
+		.domain(years)
+		.range([0, eventWidth - eventMargin.left - eventMargin.right])
+
+	var x = d3.scaleLinear()
+      .domain([d3.min(data, d => +d.start), d3.max(data, d => +d.start)])
+      .range([0, eventWidth - eventMargin.left - eventMargin.right])	
+
+	var y = d3.scaleLinear()
+	.domain([0, d3.max(data, function(d) { return +d["y-key"]; })])
+	.range([eventHeight - eventMargin.bottom - eventMargin.top, 0])
+
+    axisBottom = d3.axisBottom(xOrd)
+    // .tickPadding(2)
+    .tickFormat(formatDate) 
+    .tickValues(xOrd.domain().filter(function(d,i){ return !(i%10)}));
+
+    //comment out
+         
+
+	var startDate = d3.min(data, function(d) { return +d.start; });
+	var endDate = d3.max(data, function(d) { return +d.start; });
+	var num_days = (endDate)- (startDate)
+	var w_axis = x(endDate)-x(startDate)
+	// var scale_factor_2 = (w_axis)/num_days/num_cols	
+
+  	var sz = xOrd.bandwidth();
+  	console.log(sz)
+  	console.log(xOrd.bandwidth())
+  	var scale_factor_2 = sz;
+    svg
+	  .append("g")
+	  .attr("class", "axis")
+	  .attr("transform", (d,i)=>`translate(${0} ${eventHeight-eventMargin.bottom})`)
+	  .call(axisBottom)
+
+	svg.selectAll("rect")
+	 .data(data)
+	 .enter()
+	 .append("rect")
+	 .attr("x", function(d) {
+	 		// console.log(xOrd(d.start))
+	 		// return x(+d.start);
+	 		return xOrd(d.start)
+	 })
+	 // .attr("transform", function(d) {
+	 // 		return "translate(" + scale_factor_2*((+d["y-key"]) % num_cols) + ",0)";
+	 // 		// return "translate(0, " + sz*0.5 + ""
+	 // })
+	 .attr("y", function(d, i) {
+	 		console.log(d["y-key"])
+	 		// return y(Math.floor((+d["y-key"])/num_cols));
+	 		return y(+d["y-key"])
+	 })
+	 .attr("width", sz*0.75)
+	 .attr("height", sz*0.175)
+	 .style("fill", function(d) {
+	 		return color(d.era)
+	 })	   
+
+	 svg.append("line")
+	 	.attr("x1", xOrd("0"))
+	 	.attr("x2", xOrd("0"))  
+	 	.attr("y1", 0)
+	 	.attr("y2", y(0)+sz*0.175) 
+	 	.attr("stroke", "red")
+	 	.attr("stroke-width", 0.5)
+	 	.attr("transform", "translate(" + -sz*0.25/2 + ", 0)")
+	 svg.append("line")
+	 	.attr("x1", xOrd("0")-100)
+	 	.attr("x2", xOrd("0")+100)  
+	 	.attr("y1", 0)
+	 	.attr("y2", 0) 
+	 	.attr("stroke", "red")
+	 	.attr("stroke-width", 0.5)
+	 	.attr("transform", "translate(" + -sz*0.25/2 + ", 0)")	
+	 
+	 svg.append("text")
+	 	.text("Battle of Yavin (0 BBY)")
+	 	.attr("x", xOrd("0"))	 	 	
+	 	.attr("y", 0-5)
+	 	.attr("fill", "white")
+	 	.attr("text-anchor", "middle")
+	 	.attr("font-size", "15px")
+
+})	
+	
+</script>
+<!-- <script type="text/javascript" src="events-timeline.js"></script> -->
