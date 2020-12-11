@@ -3,11 +3,12 @@
 
 <!-- Load d3.js -->
 <script src="https://d3js.org/d3.v4.js"></script>
+<script src="d3-tip.js"></script>
 
 <!-- Create a div where the graph will take place -->
 <h1>Star Wars Canon eventline</h1>
 <p><i>Hover over a section of the eventline for a more detailed picture.</i></p>
-<div id="my_dataviz"></div>
+<!-- <div id="my_dataviz"></div> -->
 <p>The Star Wars saga, at a glance</p>
 <div id="events_eventline"></div>
 <style>
@@ -25,6 +26,11 @@ text {
 	/*font-family: Helvetica, sans-serif;*/
 	font-family: "News Cycle", sans-serif;
 	font-weight: bold;
+}
+
+svg {
+	display: block;
+	margin: auto;
 }
 
 h1, p {
@@ -48,12 +54,47 @@ h1, p {
   /*fill: white;*/
 }
 
+.d3-tip {
+  line-height: 1.4;
+  padding: 12px;
+  background: white;
+  color: black;
+  border-radius:  2px;
+  border: 2px;
+  border-color: black;
+  font-size: 12px;
+  font-family: Helvetica Neue;
+  width: 300px;
+  box-shadow: 3px 3px 1px lightgrey;
+
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+  box-sizing: border-box;
+  display: inline;
+  width: 100%;
+  line-height: 1;
+  color: rgba(200, 200, 200, 0.8);
+  content: "\25BC";
+  position: absolute;
+  text-align: center;
+}
+
+/* Style northward tooltips differently */
+.d3-tip.n:after {
+  margin: -1px 0 0 0;
+  top: 100%;
+  left: 0;
+}
+
 </style>
-<script type="text/javascript" src="canon-timeline.js"></script>
+<!-- <script type="text/javascript" src="canon-timeline.js"></script> -->
 <script>
+	// console.log(window.screen.width)
 var eventMargin = {top: 30, right: 30, bottom: 30, left: 50},
-    eventWidth = window.screen.width - eventMargin.left - eventMargin.right,
-    eventHeight = (100 - eventMargin.top - eventMargin.bottom)*8;
+    eventHeight = 5000 - eventMargin.left - eventMargin.right,
+    eventWidth = (1097.8010471204188 - eventMargin.top - eventMargin.bottom);
 
 // append the canoneventline object to the body of the page
 var svg = d3.select("#events_eventline")
@@ -65,7 +106,7 @@ var svg = d3.select("#events_eventline")
           "translate(" + eventMargin.left + "," + eventMargin.top + ")");
 
 // Parse the Data
-d3.csv("starwars - legends.csv", function(data) {
+d3.csv("starwars_final.csv", function(data) {
 
 	console.log(data)	
 	var formatDate = d=> d < 0 ? `${d3.format(",")(-d)} BBY` : `${d} ABY`
@@ -75,7 +116,7 @@ d3.csv("starwars - legends.csv", function(data) {
 	var sumstat = d3.nest() // nest function allows to group the calculation per level of a factor
 	.key(function(d) { return d.era;})
 	.entries(data);
-	// data = data.filter(function(d) {return d.Section == 0})
+	// data = data.filter(function(d) {return d.type == "Legends"})
 	var eras = sumstat.map(function(d){return d.key});    
 
 	// var swcolors = ["#D7C078", "#E7250A","#0087E9","#5AC2F0", "#32E6AC", "#AF639E", "#343D9C"]
@@ -96,23 +137,23 @@ d3.csv("starwars - legends.csv", function(data) {
 
 	var years = d3.set(data.map(function(d) {return d.start})).values();
 
-	var xOrd = d3.scaleBand()
+	var y = d3.scaleBand()
 		.domain(years)
-		.range([0, eventWidth - eventMargin.left - eventMargin.right])
+		.range([0, eventHeight - eventMargin.top - eventMargin.bottom])
+
+	// var x = d3.scaleLinear()
+ //      .domain([d3.min(data, d => +d.start), d3.max(data, d => +d.start)])
+ //      .range([0, eventWidth - eventMargin.left - eventMargin.right])	
 
 	var x = d3.scaleLinear()
-      .domain([d3.min(data, d => +d.start), d3.max(data, d => +d.start)])
-      .range([0, eventWidth - eventMargin.left - eventMargin.right])	
-
-	var y = d3.scaleLinear()
-	.domain([0, d3.max(data, function(d) { return +d["y-key"]; })])
+	.domain([-d3.max(data, function(d) { return +d["y-key"]/2; }), d3.max(data, function(d) { return +d["y-key"]/2; })])
 	// .range([eventHeight - eventMargin.bottom - eventMargin.top, 0])
-	.range([0, eventHeight - eventMargin.bottom - eventMargin.top])
+	.range([0, eventWidth - eventMargin.left - eventMargin.right])
 
-    axisTop = d3.axisTop(xOrd)
-    // .tickPadding(2)
-    .tickFormat(formatDate) 
-    .tickValues(xOrd.domain().filter(function(d,i){ return !(i%50)}));
+    // axisTop = d3.axisTop(xOrd)
+    // // .tickPadding(2)
+    // .tickFormat(formatDate) 
+    // .tickValues(xOrd.domain().filter(function(d,i){ return !(i%50)}));
 
     //comment out
          
@@ -121,18 +162,35 @@ d3.csv("starwars - legends.csv", function(data) {
 	var endDate = d3.max(data, function(d) { return +d.start; });
 	var num_days = (endDate)- (startDate)
 	var w_axis = x(endDate)-x(startDate)
+
+	console.log((eventHeight - eventMargin.bottom - eventMargin.top)/years.length)
 	// var scale_factor_2 = (w_axis)/num_days/num_cols	
 
-  	var sz = xOrd.bandwidth();
+  	var sz = (eventHeight - eventMargin.bottom - eventMargin.top)/years.length;
   	console.log(sz)
-  	console.log(xOrd.bandwidth())
-  	var szH = (eventHeight - eventMargin.bottom - eventMargin.top)/d3.max(data, function(d) { return +d["y-key"]; });
-  	var scale_factor_2 = sz;
-    svg
-	  .append("g")
-	  .attr("class", "axis")
-	  // .attr("transform", (d,i)=>`translate(${0} ${eventHeight-eventMargin.bottom})`)
-	  .call(axisTop)
+  	console.log((eventWidth - eventMargin.left - eventMargin.right)/d3.max(data, function(d) { return +d["y-key"]}))
+  	console.log(d3.max(data, function(d) { return +d["y-key"]})*sz + eventMargin.left + eventMargin.right)
+  	// var szH = (eventHeight - eventMargin.bottom - eventMargin.top)/d3.max(data, function(d) { return +d["y-key"]; });
+  	// var scale_factor_2 = sz;
+   //  svg
+	  // .append("g")
+	  // .attr("class", "axis")
+	  // // .attr("transform", (d,i)=>`translate(${0} ${eventHeight-eventMargin.bottom})`)
+	  // .call(axisTop)
+
+	var tip = d3.tip()
+	 .attr('class', 'd3-tip')
+	 .offset(d => [-10, 0])
+	 .html(function(d) {
+	  // console.log(d);
+	   return "<div>" +
+	           "<span style='color:black; font-weight:600'>" + formatDate(d.start) + "</span>" + 
+	           "<span style='color:" + color(d.era) + "; font-weight:600'> (" + d.era + ")</span><br/>" +
+	           "<span style='color:black'>" + d.event_cleaned + "</span><br/><br/>" + d["y-key"] +
+	           "<span style='color:black'>Source Text: " + d.source_text + "</span><br/>"
+	           "</div>"
+	 })
+	svg.call(tip)	  
 
 	svg.selectAll("rect")
 	 .data(data)
@@ -141,7 +199,13 @@ d3.csv("starwars - legends.csv", function(data) {
 	 .attr("x", function(d) {
 	 		// console.log(xOrd(d.start))
 	 		// return x(+d.start);
-	 		return xOrd(d.start)
+	 		if (+d["y-key"] % 2 == 0) {
+	 			return x(-Math.floor(+d["y-key"], 2))
+	 		}
+	 		else {
+	 			return x(Math.floor(+d["y-key"], 2))
+	 		}
+	 		// return x(d["y-key"])
 	 })
 	 // .attr("transform", function(d) {
 	 // 		return "translate(" + scale_factor_2*((+d["y-key"]) % num_cols) + ",0)";
@@ -149,114 +213,96 @@ d3.csv("starwars - legends.csv", function(data) {
 	 // })
 	 .attr("y", function(d, i) {
 	 		// return y(Math.floor((+d["y-key"])/num_cols));
-	 		return y(+d["y-key"])
+	 		return y(d["start"])
 	 })
-	 .attr("width", sz*0.75)
-	 .attr("height", szH*0.75)
+	 .attr("width", sz)
+	 .attr("height", sz)
 	 .style("fill", function(d) {
-	 		if (d.era == "The Clone Wars") {
-	 			console.log(color(d.era))
-	 		}
 	 		return color(d.era)
 	 })
-	   
-	const spacingBetweenLegend  = 10
-	var eventMarginLeft = 8;
-    const legend = svg.append('g')
-      .attr('class', 'legend')
-      .attr('transform', 'translate(0,0)')
-
-    const lg = legend.selectAll('g')
-      .data(eras)
-      .enter()
-      .append('g')
-      .attr('transform', 'translate(0,'+ -eventHeight/2 +')')
-
-    lg.append('rect')
-      .style('fill', d => color(d))
-      .attr('x', 8)
-      .attr('y', eventHeight/2-10)
-      .attr('height', 10)
-      .attr('width', 10)
-      // .attr('cx', 8)
-      // .attr('cy', -eventMargin.top-4)
-      // .attr('r', 5)
-
-    lg.append('text')
-      .style('font-size', '12px')
-      .attr('x', 25)
-      .attr('y', eventHeight/2)
-      .attr('fill', 'white')
-      .text(d => d)
-
-    const nodeWidth = (d) => d.getBBox().width
-
-    var x_min;
-    let offset = 0
-    lg.each(function(d, i) {
-      const x = offset
-      offset += nodeWidth(this) + 10
-      x_min = x;
-    });
-
-    var nextLine = (eventWidth - 2*eventMargin.left - 2*eventMargin.right) < x_min;
-    var target;
-    if (window.innerWidth <= 800) {
-        target = eventWidth - eventMargin.left
-    } else {
-        target =  eventWidth / 1.6;
-    }
-
-    eventMarginLeft = nextLine == true? eventMarginLeft: 0;
-    offset = eventMarginLeft;
-    var yValue = 10;
-
-    lg.attr('transform', function(d, i) {
-      var x = offset      
-      offset += nodeWidth(this) + spacingBetweenLegend
-      var ret;
-      if(offset >= target && nextLine) {
-          offset = nodeWidth(this) + spacingBetweenLegend + eventMarginLeft;
-          yValue +=20;
-          ret = `translate(${ eventMarginLeft }, ${yValue})`
-      } else {
-          ret = `translate(${x}, ${yValue})`
-      }
-      return  ret;
+    .on('mouseover', function(d) {
+      tip.show(d, this)
+      d3.select(this).attr('fill', 'lightgray')                      
     })
+    .on('mouseout', function(d) {
+      tip.hide(d, this)
+      d3.select(this).attr('fill', color(d.era))
+    })	 
+	 // .on("mouseover", etc.)
+	   
+	// const spacingBetweenLegend  = 10
+	// var eventMarginLeft = 8;
+ //    const legend = svg.append('g')
+ //      .attr('class', 'legend')
+ //      .attr('transform', 'translate(0,0)')
 
-    legend.attr('transform', function() {
-        if(window.innerWidth < 400 && nextLine) {
-            return `translate(${(eventWidth - nodeWidth(this)) /  2},${-20})`
-        } else {
-            return `translate(${(eventWidth - nodeWidth(this)) /  2},${0})`
-        }
-    })   	 
+ //    const lg = legend.selectAll('g')
+ //      .data(eras)
+ //      .enter()
+ //      .append('g')
+ //      .attr('transform', 'translate(0,'+ -eventHeight/2 +')')
 
-	 // svg.append("line")
-	 // 	.attr("x1", xOrd("0"))
-	 // 	.attr("x2", xOrd("0"))  
-	 // 	.attr("y1", 0)
-	 // 	.attr("y2", eventHeight) 
-	 // 	.attr("stroke", "red")
-	 // 	.attr("stroke-width", 5)
-	 // 	.attr("transform", "translate(" + -sz*0.25/2 + ", 0)")
-	 // svg.append("line")
-	 // 	.attr("x1", xOrd("0")-100)
-	 // 	.attr("x2", xOrd("0")+100)  
-	 // 	.attr("y1", 0)
-	 // 	.attr("y2", 0) 
-	 // 	.attr("stroke", "red")
-	 // 	.attr("stroke-width", 0.5)
-	 // 	.attr("transform", "translate(" + -sz*0.25/2 + ", 0)")	
-	 
-	 // svg.append("text")
-	 // 	.text("Battle of Yavin (0 BBY)")
-	 // 	.attr("x", xOrd("0"))	 	 	
-	 // 	.attr("y", 0-5)
-	 // 	.attr("fill", "white")
-	 // 	.attr("text-anchor", "middle")
-	 // 	.attr("font-size", "15px")
+ //    lg.append('rect')
+ //      .style('fill', d => color(d))
+ //      .attr('x', 8)
+ //      .attr('y', eventHeight/2-10)
+ //      .attr('height', 10)
+ //      .attr('width', 10)
+ //      // .attr('cx', 8)
+ //      // .attr('cy', -eventMargin.top-4)
+ //      // .attr('r', 5)
+
+ //    lg.append('text')
+ //      .style('font-size', '12px')
+ //      .attr('x', 25)
+ //      .attr('y', eventHeight/2)
+ //      .attr('fill', 'white')
+ //      .text(d => d)
+
+ //    const nodeWidth = (d) => d.getBBox().width
+
+ //    var x_min;
+ //    let offset = 0
+ //    lg.each(function(d, i) {
+ //      const x = offset
+ //      offset += nodeWidth(this) + 10
+ //      x_min = x;
+ //    });
+
+ //    var nextLine = (eventWidth - 2*eventMargin.left - 2*eventMargin.right) < x_min;
+ //    var target;
+ //    if (window.innerWidth <= 800) {
+ //        target = eventWidth - eventMargin.left
+ //    } else {
+ //        target =  eventWidth / 1.6;
+ //    }
+
+ //    eventMarginLeft = nextLine == true? eventMarginLeft: 0;
+ //    offset = eventMarginLeft;
+ //    var yValue = 10;
+
+ //    lg.attr('transform', function(d, i) {
+ //      var x = offset      
+ //      offset += nodeWidth(this) + spacingBetweenLegend
+ //      var ret;
+ //      if(offset >= target && nextLine) {
+ //          offset = nodeWidth(this) + spacingBetweenLegend + eventMarginLeft;
+ //          yValue +=20;
+ //          ret = `translate(${ eventMarginLeft }, ${yValue})`
+ //      } else {
+ //          ret = `translate(${x}, ${yValue})`
+ //      }
+ //      return  ret;
+ //    })
+
+ //    legend.attr('transform', function() {
+ //        if(window.innerWidth < 400 && nextLine) {
+ //            return `translate(${(eventWidth - nodeWidth(this)) /  2},${-20})`
+ //        } else {
+ //            return `translate(${(eventWidth - nodeWidth(this)) /  2},${0})`
+ //        }
+ //    })   	 
+
 
 })	
 	
