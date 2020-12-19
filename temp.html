@@ -6,8 +6,8 @@
 <script src="d3-tip.js"></script>
 
 <!-- Create a div where the graph will take place -->
-<h1>Star Wars Canon eventline</h1>
-<p><i>Hover over a section of the eventline for a more detailed picture.</i></p>
+<h1>Star Wars Legends vs. Canon</h1>
+<p><i>Hover over an event for more details.</i></p>
 <!-- <div id="my_dataviz"></div> -->
 <p>The Star Wars saga, at a glance</p>
 <div id="events_eventline"></div>
@@ -106,7 +106,7 @@ var svg = d3.select("#events_eventline")
           "translate(" + eventMargin.left + "," + eventMargin.top + ")");
 
 // Parse the Data
-d3.csv("starwars_final.csv", function(data) {
+d3.csv("starwars_final_v3.csv", function(data) {
 
 	console.log(data)	
 	var formatDate = d=> d < 0 ? `${d3.format(",")(-d)} BBY` : `${d} ABY`
@@ -186,7 +186,7 @@ d3.csv("starwars_final.csv", function(data) {
 	   return "<div>" +
 	           "<span style='color:black; font-weight:600'>" + formatDate(d.start) + "</span>" + 
 	           "<span style='color:" + color(d.era) + "; font-weight:600'> (" + d.era + ")</span><br/>" +
-	           "<span style='color:black'>" + d.event_cleaned + "</span><br/><br/>" + d["y-key"] +
+	           "<span style='color:black'>" + d.event_cleaned + "</span><br/><br/>" +
 	           "<span style='color:black'>Source Text: " + d.source_text + "</span><br/>"
 	           "</div>"
 	 })
@@ -196,14 +196,15 @@ d3.csv("starwars_final.csv", function(data) {
 	 .data(data)
 	 .enter()
 	 .append("rect")
-	 .attr("x", function(d) {
+	 .attr("x", function(d, i) {
 	 		// console.log(xOrd(d.start))
 	 		// return x(+d.start);
-	 		if (+d["y-key"] % 2 == 0) {
-	 			return x(-Math.floor(+d["y-key"], 2))
+	 		// if (+d["pivot"] % 2 == 0) {
+			if (d["type"] != "Legends") {	 			
+	 			return x(-Math.floor((+d["sub-key"])/2)-1)
 	 		}
 	 		else {
-	 			return x(Math.floor(+d["y-key"], 2))
+	 			return x(Math.floor((+d["sub-key"])/2)+1)
 	 		}
 	 		// return x(d["y-key"])
 	 })
@@ -215,12 +216,14 @@ d3.csv("starwars_final.csv", function(data) {
 	 		// return y(Math.floor((+d["y-key"])/num_cols));
 	 		return y(d["start"])
 	 })
-	 .attr("width", sz)
-	 .attr("height", sz)
+	 .attr("width", sz/1.4)
+	 .attr("height", sz/1.4)
 	 .style("fill", function(d) {
 	 		return color(d.era)
 	 })
     .on('mouseover', function(d) {
+    		 			console.log(d["y-key"])
+	 			console.log(Math.floor(+d["y-key"], 2))
       tip.show(d, this)
       d3.select(this).attr('fill', 'lightgray')                      
     })
