@@ -13,6 +13,10 @@
     <div id="filter" class="form-item form-checkboxes checkbox">
         <form method="post" action="" class="form"></form>
     </div>
+    <form id="color_filter" class="form-radio">
+      <input  type='radio' id="era_cleaned" class="filter-radio" name="mode" checked>Color by era</input>
+      <input type='radio' id="source_cleaned" class="filter-radio" name="mode">Color by media</input>
+    </form>
 <div id="events_eventline"></div>
 <style>
 @import url(https://fonts.googleapis.com/css?family=News+Cycle:400,700);
@@ -24,7 +28,7 @@ body {
   font: "News Cycle", sans-serif;
 }
 
-text {
+text, #text {
 	/*fill: white;*/
 	/*font-family: Helvetica, sans-serif;*/
 	font-family: "News Cycle", sans-serif;
@@ -36,7 +40,7 @@ svg {
 	margin: auto;
 }
 
-h1, p, label {
+h1, p, text, #text, #color_filter {
 	fill: white;
 	color: white;
 	font-family: "News Cycle", sans-serif;
@@ -111,6 +115,11 @@ var svg = d3.select("#events_eventline")
 //Build checkboxes
 var filter_list = ["OT", "PT", "ST", "TCW", "M", "Rebels", "Resistance", "Other"]
 
+var swcolors_media = ["#78ED74", "#A43837", "#E0AA5A", "#EEF0F1", "#688296", "#EF7219", "#8CDBE2", "#CC88D3"]
+var media_color = d3.scaleOrdinal()
+		 .domain(filter_list)
+		 .range(swcolors_media)
+
 d3.select("#filter")
     .selectAll("input")
     .data(filter_list)
@@ -129,24 +138,47 @@ d3.select("#filter")
 
 d3.selectAll("label")
     .data(filter_list)
-    .attr("class", "checkbox")	    	    
-    .append("text").text(function (d) {
+    // .attr("class", "checkbox")	    	    
+    .append("text")
+    .attr("class", "text-label")
+    .text(function (d) {
         return " " + d
-    })	
-    .attr("fill", "white")
-    .attr('font-color', "white")    
+    })
+    .style('color', function(d) {
+    	return media_color(d)
+    })
+    // .attr('font-color', "white")    
 
 var formatDate = d=> d < 0 ? `${d3.format(",")(-d)} BBY` : `${d} ABY`
 //unnecessary
 var num_cols = 5;
 
-function loadTimeline(choices) {
+function loadTimeline(choices, filter) {
 	d3.csv("starwars_src_cleaned.csv", function(data) {
 		d3.selectAll(".rect-event").remove();
 		d3.select("#vline").remove();
 
 		var years = d3.set(data.map(function(d) {return d.start})).values();
 		var sz = (eventHeight - eventMargin.bottom - eventMargin.top)/years.length;
+		//master color scheme for eras
+		var swcolors_master = ["#A1A333", "#D5BE78", "#EFAF82", "#E7250A", "#9E5B60", "#0E5AA1", "#5FA0DE", "#453110", "#FBFFFE", "#3D5E78", "#D8DA8E", "#0C9198", "#353E9F", "#027693", "#A7281C", "#FBA411", "#0387E9", "#F26C28", "#BFAB87", "#E7250A", "#5AC2F1", "#8A2239", "#1D652F", "#32E6AC", "#AF639E", "#343D9D"]
+
+		var color;
+		//nest data by era
+		if (filter == "era_cleaned") {
+			var sumstat = d3.nest()
+				.key(function(d) { return d.era_cleaned;})
+				.entries(data);
+
+			var eras = sumstat.map(function(d){return d.key});    
+
+			color = d3.scaleOrdinal()
+					.domain(eras)
+					.range(swcolors_master)	
+		}	
+		else {
+			color = media_color
+		}
 
 		if (choices.length > 0) {
 		    data = data.filter(function (d, i) {
@@ -155,21 +187,7 @@ function loadTimeline(choices) {
 		    });
 		} else {
 		    data = csv; // so that no boxes checked shows all data
-		}
-
-		//nest data by era
-		var sumstat = d3.nest()
-			.key(function(d) { return d.era_cleaned;})
-			.entries(data);
-
-		var eras = sumstat.map(function(d){return d.key});    
-
-		//master color scheme
-		var swcolors_master = ["#A1A333", "#D5BE78", "#EFAF82", "#E7250A", "#9E5B60", "#0E5AA1", "#5FA0DE", "#453110", "#FBFFFE", "#3D5E78", "#D8DA8E", "#0C9198", "#353E9F", "#027693", "#A7281C", "#FBA411", "#0387E9", "#F26C28", "#BFAB87", "#E7250A", "#5AC2F1", "#8A2239", "#1D652F", "#32E6AC", "#AF639E", "#343D9D"]
-
-		var color = d3.scaleOrdinal()
-				.domain(eras)
-				.range(swcolors_master)	
+		}	
 
 		var years = d3.set(data.map(function(d) {return d.start})).values();
 
@@ -225,7 +243,12 @@ function loadTimeline(choices) {
 		 .attr("width", sz/1.4)
 		 .attr("height", sz/1.4)
 		 .style("fill", function(d) {
+		 	if (filter == "era_cleaned") {		 		
 		 		return color(d.era_cleaned)
+		 	}
+		 	else {
+		 		return color(d["source_cleaned"])
+		 	}
 		 })
 		 .on('mouseover', function(d) {
 		   tip.show(d, this)
@@ -252,7 +275,7 @@ function loadTimeline(choices) {
  // Parse the Data
 }
 
-loadTimeline(filter_list);
+loadTimeline(filter_list, "era_cleaned");
 
 var checkBox = d3.selectAll(".filter-check")
 
@@ -263,18 +286,35 @@ checkBox.on("change", function () {
 	    choices.push(encodeURIComponent(checkboxes[i].value))
 	}
 
-	loadTimeline(choices);
-	// feeding data filtered from choices array
-	// if (choices.length > 0) {
-	//     data = csv.filter(function (d, i) {
-	//         return _.includes(decodeURIComponent(choices), d[filter_on]);
-	//     });
-	// } else {
-	//     data = csv; // so that no boxes checked shows all data
-	// }
-	// update url with help of new choices array
+	var form = document.getElementById("color_filter")
+	var form_val;
+	for(var i=0; i<form.length; i++) {		
+		if (form[i].checked) {
+			form_val = form[i].id;
+		}
+	}	
 
-	 
+	loadTimeline(choices, form_val);	 
+})
+
+var radioButtons = d3.selectAll(".filter-radio")
+
+radioButtons.on("change", function() {
+	var choices = []
+	var checkboxes = document.querySelectorAll('input[type=checkbox]:checked')
+	for (var i = 0; i < checkboxes.length; i++) {
+	    choices.push(encodeURIComponent(checkboxes[i].value))
+	}
+
+	var form = document.getElementById("color_filter")
+	var form_val;
+	for(var i=0; i<form.length; i++) {		
+		if (form[i].checked) {
+			form_val = form[i].id;
+		}
+	}	
+
+	loadTimeline(choices, form_val);
 })
 	// d3.csv("starwars_src_cleaned.csv", function(data) {
 
