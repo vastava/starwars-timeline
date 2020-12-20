@@ -92,7 +92,7 @@ h1, p {
 <!-- <script type="text/javascript" src="canon-timeline.js"></script> -->
 <script>
 	// console.log(window.screen.width)
-var eventMargin = {top: 30, right: 30, bottom: 30, left: 50},
+var eventMargin = {top: 30, right: 30, bottom: 30, left: 30},
     eventHeight = 5000 - eventMargin.left - eventMargin.right,
     eventWidth = (1097.8010471204188 - eventMargin.top - eventMargin.bottom);
 
@@ -106,7 +106,7 @@ var svg = d3.select("#events_eventline")
           "translate(" + eventMargin.left + "," + eventMargin.top + ")");
 
 // Parse the Data
-d3.csv("starwars_final_v3.csv", function(data) {
+d3.csv("starwars_final_v4.csv", function(data) {
 
 	console.log(data)	
 	var formatDate = d=> d < 0 ? `${d3.format(",")(-d)} BBY` : `${d} ABY`
@@ -114,7 +114,7 @@ d3.csv("starwars_final_v3.csv", function(data) {
 	var num_cols = 5;
 
 	var sumstat = d3.nest() // nest function allows to group the calculation per level of a factor
-	.key(function(d) { return d.era;})
+	.key(function(d) { return d.era_cleaned;})
 	.entries(data);
 	// data = data.filter(function(d) {return d.type == "Legends"})
 	var eras = sumstat.map(function(d){return d.key});    
@@ -123,6 +123,8 @@ d3.csv("starwars_final_v3.csv", function(data) {
 	var swcolors = ["#A1A333", "#EFAF82", "#9E5A60", "#0E5AA1", "#5FA0DE", "#453010",
 					"#FBFFFE", "#3D5E78", "#D8DA8E", "#0C9197", "#353D9E",  "#007693",
 					"#A7281C", "#FAA312", "#F26C28", "#BFAB87", "#E7250A", "#8A2238", "#1D652F"]
+
+	var swcolors = ["#A1A333", "#D5BE78", "#EFAF82", "#E7250A", "#9E5B60", "#0E5AA1", "#5FA0DE", "#453110", "#FBFFFE", "#3D5E78", "#D8DA8E", "#0C9198", "#353E9F", "#027693", "#A7281C", "#FBA411", "#0387E9", "#F26C28", "#BFAB87", "#E7250A", "#5AC2F1", "#8A2239", "#1D652F", "#32E6AC", "#AF639E", "#343D9D"]					
 	var color = d3.scaleOrdinal()
 			.domain(eras)
 			// .range(["red", "orange", "yellow", "green", "blue", "purple"])
@@ -185,7 +187,7 @@ d3.csv("starwars_final_v3.csv", function(data) {
 	  // console.log(d);
 	   return "<div>" +
 	           "<span style='color:black; font-weight:600'>" + formatDate(d.start) + "</span>" + 
-	           "<span style='color:" + color(d.era) + "; font-weight:600'> (" + d.era + ")</span><br/>" +
+	           "<span style='color:" + color(d.era_cleaned) + "; font-weight:600'> (" + d.era_cleaned + ")</span><br/>" +
 	           "<span style='color:black'>" + d.event_cleaned + "</span><br/><br/>" +
 	           "<span style='color:black'>Source Text: " + d.source_text + "</span><br/>"
 	           "</div>"
@@ -219,7 +221,7 @@ d3.csv("starwars_final_v3.csv", function(data) {
 	 .attr("width", sz/1.4)
 	 .attr("height", sz/1.4)
 	 .style("fill", function(d) {
-	 		return color(d.era)
+	 		return color(d.era_cleaned)
 	 })
     .on('mouseover', function(d) {
     		 			console.log(d["y-key"])
@@ -229,7 +231,7 @@ d3.csv("starwars_final_v3.csv", function(data) {
     })
     .on('mouseout', function(d) {
       tip.hide(d, this)
-      d3.select(this).attr('fill', color(d.era))
+      d3.select(this).attr('fill', color(d.era_cleaned))
     })	 
 	 // .on("mouseover", etc.)
 	   
