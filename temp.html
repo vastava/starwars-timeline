@@ -9,7 +9,7 @@
 <h1>Star Wars Legends vs. Canon</h1>
 <p><i>Hover over an event for more details.</i></p>
 <!-- <div id="my_dataviz"></div> -->
-<p>Haven't watched something? Don't want spoilers? Uncheck a box to filter out events from that piece of media in the timeline.</p>
+<p>Haven't watched something, and don't want spoilers? Deactivate the lightsabers to filter out events from that piece of media in the timeline.</p>
     <div id="filter" class="form-item form-checkboxes checkbox">
         <form method="post" action="" class="form"></form>
     </div>
@@ -26,6 +26,7 @@ body {
   background-image: url('https://prod-ripcut-delivery.disney-plus.net/v1/variant/disney/A11FF0C824A45B7D466AA336DC07F3D5AEF32E94A8E31ED9E6FEC67551C744CA/scale?aspectRatio=1.78&format=jpeg');
   background-size: 100%;
   font: "News Cycle", sans-serif;
+  margin: auto;
 }
 
 text, #text {
@@ -95,6 +96,99 @@ h1, p, text, #text, #color_filter {
   left: 0;
 }
 
+/*saber switches*/
+.switch input { 
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+label {
+	display: inline-block;
+	/*width: 150px;*/
+}
+/*.saber-switch {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}*/
+
+.saber-switch {
+	font-size: 10px;
+	display: inline-block;
+	position: relative;
+	width: 100%;
+	margin: -2.2em auto 0 0.2em;
+	cursor: pointer;
+	margin: -3.2em 0 0 0.7em;
+}
+
+.saber-switch .bar {
+	display: block;
+	width: 3.8em;
+	height: 0.2em;
+	margin: 0.9em;
+	border-right: 2.8em solid #fff;
+	border-left: 0.6em solid #d6d6d6;
+	box-sizing: border-box;
+}
+
+.bar:nth-of-type(1) {
+  	margin-left: 1.4em;
+	transform: rotate(-137deg) translateY(-1.5em);
+/*  	border-right-color: #A43837;
+	box-shadow: 0.4em 0 0.6em 0.1em rgba(205,40,44,0.75);*/  
+}
+
+
+.bar:nth-of-type(2) {
+	margin-left: 0.5em;
+	transform: rotate(-42deg);
+/*  	border-right-color: #78ED74;
+	box-shadow: 0.4em 0 0.6em 0.1em #78ED74;*/
+}
+
+/*input:not(:checked) + .saber-switch {
+	box-shadow: none;
+
+}*/
+/*.saber-switch:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}*/
+
+/*input:checked + .saber-switch {
+  background-color: #2196F3;
+}
+
+input:checked + .saber-switch:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+/*.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}*/
+
 </style>
 <!-- <script type="text/javascript" src="canon-timeline.js"></script> -->
 <script>
@@ -115,7 +209,7 @@ var svg = d3.select("#events_eventline")
 //Build checkboxes
 var filter_list = ["OT", "PT", "ST", "TCW", "M", "Rebels", "Resistance", "Other"]
 
-var swcolors_media = ["#78ED74", "#A43837", "#E0AA5A", "#EEF0F1", "#688296", "#EF7219", "#8CDBE2", "#CC88D3"]
+var swcolors_media = ["#78ED74", "#A43837", "#E0AA5A", "#EEF0F1", "#5F91CA", "#EF7219", "#8CDBE2", "#CC88D3"]
 var media_color = d3.scaleOrdinal()
 		 .domain(filter_list)
 		 .range(swcolors_media)
@@ -125,6 +219,7 @@ d3.select("#filter")
     .data(filter_list)
     .enter()
     .append("label")
+    .attr("class", "switch")
     .append("input")
     .attr("type", "checkbox")
     .attr("class", "filter-check")
@@ -136,6 +231,35 @@ d3.select("#filter")
         return d
     });
 
+var spans = d3.selectAll("label")
+    .data(filter_list)
+    // .attr("class", "checkbox")	    	    
+    .append("span")
+    .attr("class", "saber-switch")
+    .attr("id", function(d) { return d+"sabers"; })
+    // .data([1,2])
+    // .enter()
+    // .append("span")
+    // .attr("class", "bar")
+
+spans.append("span")
+	.attr("class", "bar")
+	.style("border-right-color", function(d) {
+		return media_color(d);
+	})
+	.style("box-shadow", function(d) {
+		return "0.4em 0 0.6em 0.1em " + media_color(d);
+	})
+
+spans.append("span")
+	.attr("class", "bar")
+	.style("border-right-color", function(d) {
+		return media_color(d);
+	})
+	.style("box-shadow", function(d) {
+		return "0.4em 0 0.6em 0.1em " + media_color(d);
+	})
+
 d3.selectAll("label")
     .data(filter_list)
     // .attr("class", "checkbox")	    	    
@@ -144,10 +268,10 @@ d3.selectAll("label")
     .text(function (d) {
         return " " + d
     })
-    .style('color', function(d) {
-    	return media_color(d)
-    })
-    // .attr('font-color', "white")    
+    // .style('color', function(d) {
+    // 	return media_color(d)
+    // })
+    .style('color', "white")    
 
 var formatDate = d=> d < 0 ? `${d3.format(",")(-d)} BBY` : `${d} ABY`
 //unnecessary
@@ -281,9 +405,30 @@ var checkBox = d3.selectAll(".filter-check")
 
 checkBox.on("change", function () {
 	var choices = []
-	var checkboxes = document.querySelectorAll('input[type=checkbox]:checked')
+	var checkboxes = document.querySelectorAll('input[type=checkbox]')
+	var unchecked = []
+
 	for (var i = 0; i < checkboxes.length; i++) {
-	    choices.push(encodeURIComponent(checkboxes[i].value))
+		if (checkboxes[i]["checked"]) {
+			choices.push(encodeURIComponent(checkboxes[i].value))
+		}
+	    else {
+	    	unchecked.push(encodeURIComponent(checkboxes[i].value))
+	    }
+	}
+
+	for (var i = 0; i <unchecked.length; i ++) {
+		d3.select("#" + unchecked[i] + "sabers").selectAll(".bar").style("box-shadow", "none").style("border-right-color", "#d6d6d6")
+	}
+
+	for (var i = 0; i <choices.length; i ++) {
+		d3.select("#" + choices[i] + "sabers").selectAll(".bar")
+			.style("box-shadow", function(d) {
+				return "0.4em 0 0.6em 0.1em " + media_color(d);
+			})
+			.style("border-right-color", function(d) {
+				return media_color(d);
+			})
 	}
 
 	var form = document.getElementById("color_filter")
@@ -291,15 +436,17 @@ checkBox.on("change", function () {
 	for(var i=0; i<form.length; i++) {		
 		if (form[i].checked) {
 			form_val = form[i].id;
-		}
+		}		
 	}	
+
+	console.log(choices)
 
 	loadTimeline(choices, form_val);	 
 })
 
 var radioButtons = d3.selectAll(".filter-radio")
 
-radioButtons.on("change", function() {
+radioButtons.on("change", function() {	
 	var choices = []
 	var checkboxes = document.querySelectorAll('input[type=checkbox]:checked')
 	for (var i = 0; i < checkboxes.length; i++) {
