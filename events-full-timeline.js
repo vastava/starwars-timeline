@@ -1,228 +1,15 @@
-<!DOCTYPE html>
-<meta charset="utf-8">
-
-<!-- Load d3.js -->
-<script src="https://d3js.org/d3.v4.js"></script>
-<script src="d3-tip.js"></script>
-
-<!-- Create a div where the graph will take place -->
-<h1>Legends vs. Canon: the complete timeline</h1>
-<p><i>Hover over an event for more details.</i></p>
-<!-- <div id="my_dataviz"></div> -->
-<form id="color_filter" class="form-radio">
-  <input  type='radio' id="era_cleaned" class="filter-radio" name="mode" checked>Color by era</input>
-  <input type='radio' id="source_cleaned" class="filter-radio" name="mode">Color by media</input>
-</form>
-<p>Haven't watched something, and don't want spoilers? Deactivate the lightsabers to filter out events from that piece of media in the timeline.</p>
-    <div id="filter" class="form-item form-checkboxes checkbox">
-        <form method="post" action="" class="form"></form>
-    </div>
-<div id="events_full_timeline"></div>
-
-<style>
-@import url(https://fonts.googleapis.com/css?family=News+Cycle:400,700);
-@import url("https://use.typekit.net/jcy0mvn.css");
-
-body {
-  background: black;
-  background-image: url('https://prod-ripcut-delivery.disney-plus.net/v1/variant/disney/A11FF0C824A45B7D466AA336DC07F3D5AEF32E94A8E31ED9E6FEC67551C744CA/scale?aspectRatio=1.78&format=jpeg');
-  background-size: 100%;
-  font: "News Cycle", sans-serif;
-  margin: auto;
-  text-align: center;
-}
-
-#timeline-wrapper {
-	margin: auto;
-	max-width: 960px;
-}
-text, #text {
-	/*fill: white;*/
-	/*font-family: Helvetica, sans-serif;*/
-	font-family: "News Cycle", sans-serif;
-	font-weight: bold;
-}
-
-svg {
-	display: block;
-	margin: auto;
-}
-
-h1, p, text, #text, #color_filter {
-	fill: white;
-	color: white;
-	font-family: "News Cycle", sans-serif;
-}
-
-.axis line {
-  fill: white;
-  /*stroke: #000;*/
-  stroke: white;
-  /*shape-rendering: crispEdges;*/
-}
-
-.axis text {
-  fill: white;
-}
-
-.axis path {
-  /*fill: white;*/
-}
-
-.d3-tip {
-  line-height: 1.4;
-  padding: 12px;
-  background: white;
-  color: black;
-  border-radius:  2px;
-  border: 2px;
-  border-color: black;
-  font-size: 12px;
-  font-family: Helvetica Neue;
-  width: 300px;
-  box-shadow: 3px 3px 1px lightgrey;
-  text-align: left;
-
-}
-
-/* Creates a small triangle extender for the tooltip */
-.d3-tip:after {
-  box-sizing: border-box;
-  display: inline;
-  width: 100%;
-  line-height: 1;
-  color: rgba(200, 200, 200, 0.8);
-  content: "\25BC";
-  position: absolute;
-  text-align: center;
-}
-
-/* Style northward tooltips differently */
-.d3-tip.n:after {
-  margin: -1px 0 0 0;
-  top: 100%;
-  left: 0;
-}
-
-/*saber switches*/
-.switch input { 
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-label {
-	display: inline-block;
-	text-align: center;
-	/*width: 150px;*/
-}
-
-.text-label {
-	display: inline;
-}
-/*.saber-switch {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  -webkit-transition: .4s;
-  transition: .4s;
-}*/
-
-.saber-switch {
-	font-size: 8px;
-	display: inline-block;
-	position: relative;
-	/*width: 100%;*/
-	/*height: 30px;*/
-	margin: -2.2em auto 0 0.2em;
-	cursor: pointer;
-	margin: -3.2em 0 0 0.7em;
-}
-
-.saber-switch .bar {
-	display: block;
-	width: 3.8em;
-	height: 0.2em;
-	margin: 0.9em;
-	border-right: 2.8em solid #fff;
-	border-left: 0.6em solid #d6d6d6;
-	box-sizing: border-box;
-}
-
-.bar:nth-of-type(1) {
-  	margin-left: 1.4em;
-	transform: rotate(-137deg) translateY(-1.5em);
-/*  	border-right-color: #A43837;
-	box-shadow: 0.4em 0 0.6em 0.1em rgba(205,40,44,0.75);*/  
-}
-
-
-.bar:nth-of-type(2) {
-	margin-left: 0.5em;
-	transform: rotate(-42deg);
-/*  	border-right-color: #78ED74;
-	box-shadow: 0.4em 0 0.6em 0.1em #78ED74;*/
-}
-
-form {
-	display: inline-block;
-}
-
-/*input:not(:checked) + .saber-switch {
-	box-shadow: none;
-
-}*/
-/*.saber-switch:before {
-  position: absolute;
-  content: "";
-  height: 26px;
-  width: 26px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  -webkit-transition: .4s;
-  transition: .4s;
-}*/
-
-/*input:checked + .saber-switch {
-  background-color: #2196F3;
-}
-
-input:checked + .saber-switch:before {
-  -webkit-transform: translateX(26px);
-  -ms-transform: translateX(26px);
-  transform: translateX(26px);
-}
-
-/* Rounded sliders */
-/*.slider.round {
-  border-radius: 34px;
-}
-
-.slider.round:before {
-  border-radius: 50%;
-}*/
-
-</style>
-<!-- <script type="text/javascript" src="canon-timeline.js"></script> -->
-<script>
-	// console.log(window.screen.width)
-var eventMargin = {top: 30, right: 30, bottom: 30, left: 30},
-    eventHeight = 5000 - eventMargin.left - eventMargin.right,
-    eventWidth = (1097.8010471204188 - eventMargin.top - eventMargin.bottom);
+var fullMargin = {top: 30, right: 30, bottom: 30, left: 30},
+    fullHeight = 5000 - fullMargin.left - fullMargin.right,
+    fullWidth = (1097.8010471204188 - fullMargin.top - fullMargin.bottom);
 
 // append the canoneventline object to the body of the page
 var svg = d3.select("#events_full_timeline")
   .append("svg")
-    .attr("width", eventWidth + eventMargin.left + eventMargin.right)
-    .attr("height", eventHeight + eventMargin.top + eventMargin.bottom)
+    .attr("width", fullWidth + fullMargin.left + fullMargin.right)
+    .attr("height", fullHeight + fullMargin.top + fullMargin.bottom)
   .append("g")
     .attr("transform",
-          "translate(" + eventMargin.left + "," + eventMargin.top + ")");
+          "translate(" + fullMargin.left + "," + fullMargin.top + ")");
 
 //Build checkboxes
 var filter_list = ["Original Trilogy", "Prequel Trilogy", "Sequel Trilogy", "Anthology Films", "The Clone Wars", "The Mandalorian", "Rebels", "Resistance", "Extended Universe"]
@@ -303,7 +90,7 @@ function loadTimeline(choices, filter) {
 
 		data = data.sort(function(a,b) {return a.start - b.start});
 		var years = d3.set(data.map(function(d) {return d.start})).values();
-		var sz = (eventHeight - eventMargin.bottom - eventMargin.top)/years.length;
+		var sz = (fullHeight - fullMargin.bottom - fullMargin.top)/years.length;
 		//master color scheme for eras
 		var swcolors_master = ["#A1A333", "#D5BE78", "#EFAF82", "#E7250A", "#9E5B60", "#0E5AA1", "#5FA0DE", "#453110", "#FBFFFE", "#3D5E78", "#D8DA8E", "#0C9198", "#353E9F", "#027693", "#A7281C", "#FBA411", "#0387E9", "#F26C28", "#BFAB87", "#5AC2F1", "#E7250A", "#1D652F", "#8A2239", "#32E6AC", "#AF639E", "#343D9D"]
 
@@ -337,21 +124,21 @@ function loadTimeline(choices, filter) {
 
 		var y = d3.scaleBand()
 			.domain(years)
-			.range([0, eventHeight - eventMargin.top - eventMargin.bottom])
+			.range([0, fullHeight - fullMargin.top - fullMargin.bottom])
 
 		var x = d3.scaleLinear()
 			.domain([-d3.max(data, function(d) { return +d["y-key"]/2; }), d3.max(data, function(d) { return +d["y-key"]/2; })])
-			.range([0, eventWidth - eventMargin.left - eventMargin.right])
+			.range([0, fullWidth - fullMargin.left - fullMargin.right])
 
 		var startDate = d3.min(data, function(d) { return +d.start; });
 		var endDate = d3.max(data, function(d) { return +d.start; });
 		var num_days = (endDate)- (startDate)
 		var w_axis = x(endDate)-x(startDate)
 
-	  	// var sz = (eventHeight - eventMargin.bottom - eventMargin.top)/years.length;
+	  	// var sz = (fullHeight - fullMargin.bottom - fullMargin.top)/years.length;
 
 	  	//width calc
-	  	//console.log(d3.max(data, function(d) { return +d["y-key"]})*sz + eventMargin.left + eventMargin.right)
+	  	//console.log(d3.max(data, function(d) { return +d["y-key"]})*sz + fullMargin.left + fullMargin.right)
 
 		var tip = d3.tip()
 		 .attr('class', 'd3-tip')
@@ -409,7 +196,7 @@ function loadTimeline(choices, filter) {
 		 	.attr("x1", x(0) + sz/2)
 		 	.attr("x2", x(0) + sz/2)  
 		 	.attr("y1", 0)
-		 	.attr("y2", eventHeight - eventMargin.top - eventMargin.bottom) 
+		 	.attr("y2", fullHeight - fullMargin.top - fullMargin.bottom) 
 		 	.attr("stroke", "white")
 		 	.attr("stroke-width", 1)	
 		 	.attr("tranform", "translate(" + sz + "," + sz + ")")
@@ -427,8 +214,8 @@ function loadTimeline(choices, filter) {
 		svg.append("line")
 		 	.attr("x1", x(0) - 30 + sz)
 		 	.attr("x2", x(0) + 30)  
-		 	.attr("y1", eventHeight - eventMargin.top - eventMargin.bottom + 5)
-		 	.attr("y2", eventHeight - eventMargin.top - eventMargin.bottom + 5)
+		 	.attr("y1", fullHeight - fullMargin.top - fullMargin.bottom + 5)
+		 	.attr("y2", fullHeight - fullMargin.top - fullMargin.bottom + 5)
 		 	.attr("stroke", "white")
 		 	.attr("stroke-width", 1)	
 		 	.attr("tranform", "translate(" + sz/2 + "," + -sz + ")")
@@ -475,7 +262,7 @@ function loadTimeline(choices, filter) {
 			.style("font-size", "80px")
 			.style("opacity", 0.7)
 			.style("font-weight", 199)
-			.attr("transform", "translate(" + eventMargin.left*2 + ",350) rotate(270)")
+			.attr("transform", "translate(" + fullMargin.left*2 + ",350) rotate(270)")
 
 		svg.append("text")
 			.text("LEGENDS")
@@ -485,7 +272,7 @@ function loadTimeline(choices, filter) {
 			.style("font-size", "80px")
 			.style("opacity", 0.7)
 			.style("font-weight", 199)
-			.attr("transform", "translate(" + (eventWidth - eventMargin.right*2) + ",200) rotate(90)")
+			.attr("transform", "translate(" + (fullWidth - fullMargin.right*2) + ",200) rotate(90)")
 		 // .on("mouseover", etc.)
 	})
 
@@ -558,96 +345,3 @@ radioButtons.on("change", function() {
 
 	loadTimeline(choices, form_val);
 })
-	// d3.csv("starwars_src_cleaned.csv", function(data) {
-
-	// 	//nest data by era
-	// 	var sumstat = d3.nest()
-	// 		.key(function(d) { return d.era_cleaned;})
-	// 		.entries(data);
-
-	// 	var eras = sumstat.map(function(d){return d.key});    
-
-	// 	//master color scheme
-	// 	var swcolors_master = ["#A1A333", "#D5BE78", "#EFAF82", "#E7250A", "#9E5B60", "#0E5AA1", "#5FA0DE", "#453110", "#FBFFFE", "#3D5E78", "#D8DA8E", "#0C9198", "#353E9F", "#027693", "#A7281C", "#FBA411", "#0387E9", "#F26C28", "#BFAB87", "#E7250A", "#5AC2F1", "#8A2239", "#1D652F", "#32E6AC", "#AF639E", "#343D9D"]
-
-	// 	var color = d3.scaleOrdinal()
-	// 			.domain(eras)
-	// 			.range(swcolors_master)	
-
-	// 	var years = d3.set(data.map(function(d) {return d.start})).values();
-
-	// 	var y = d3.scaleBand()
-	// 		.domain(years)
-	// 		.range([0, eventHeight - eventMargin.top - eventMargin.bottom])
-
-	// 	var x = d3.scaleLinear()
-	// 		.domain([-d3.max(data, function(d) { return +d["y-key"]/2; }), d3.max(data, function(d) { return +d["y-key"]/2; })])
-	// 		.range([0, eventWidth - eventMargin.left - eventMargin.right])
-
-	// 	var startDate = d3.min(data, function(d) { return +d.start; });
-	// 	var endDate = d3.max(data, function(d) { return +d.start; });
-	// 	var num_days = (endDate)- (startDate)
-	// 	var w_axis = x(endDate)-x(startDate)
-
-	//   	var sz = (eventHeight - eventMargin.bottom - eventMargin.top)/years.length;
-
-	//   	//width calc
-	//   	//console.log(d3.max(data, function(d) { return +d["y-key"]})*sz + eventMargin.left + eventMargin.right)
-
-	// 	var tip = d3.tip()
-	// 	 .attr('class', 'd3-tip')
-	// 	 .offset(d => [-10, 0])
-	// 	 .html(function(d) {
-	// 	  // console.log(d);
-	// 	   return "<div>" +
-	// 	           "<span style='color:black; font-weight:600'>" + formatDate(d.start) + "</span>" + 
-	// 	           "<span style='color:" + color(d.era_cleaned) + "; font-weight:600'> (" + d.era_cleaned + ")</span><br/>" +
-	// 	           "<span style='color:black'>" + d.event_cleaned + "</span><br/><br/>" +
-	// 	           "<span style='color:black'>Source Text: " + d.source_text + "</span><br/>"
-	// 	           "</div>"
-	// 	 })
-	// 	svg.call(tip)	  
-
-	// 	svg.selectAll("rect")
-	// 	 .data(data)
-	// 	 .enter()
-	// 	 .append("rect")
-	// 	 .attr("x", function(d, i) {
-	// 			if (d["type"] != "Legends") {	 			
-	// 	 			return x(-Math.floor((+d["sub-key"])/2)-1)
-	// 	 		}
-	// 	 		else {
-	// 	 			return x(Math.floor((+d["sub-key"])/2)+1)
-	// 	 		}
-	// 	 })
-	// 	 .attr("y", function(d, i) {
-	// 	 		// return y(Math.floor((+d["y-key"])/num_cols));
-	// 	 		return y(d["start"])
-	// 	 })
-	// 	 .attr("width", sz/1.4)
-	// 	 .attr("height", sz/1.4)
-	// 	 .style("fill", function(d) {
-	// 	 		return color(d.era_cleaned)
-	// 	 })
-	// 	 .on('mouseover', function(d) {
-	// 	   tip.show(d, this)
-	// 	   d3.select(this).attr('fill', 'lightgray')                      
-	// 	  })
-	// 	 .on('mouseout', function(d) {
-	// 	   tip.hide(d, this)
-	// 	   d3.select(this).attr('fill', color(d.era_cleaned))
-	// 	 })	 
-
-	// 	svg.append("line")
-	// 	 	.attr("x1", x(0))
-	// 	 	.attr("x2", x(0))  
-	// 	 	.attr("y1", 0)
-	// 	 	.attr("y2", eventHeight) 
-	// 	 	.attr("stroke", "white")
-	// 	 	.attr("stroke-width", 1)	
-
-	// 	 // .on("mouseover", etc.)
-	// })	
-	
-</script>
-<!-- <script type="text/javascript" src="events-eventline.js"></script> -->
