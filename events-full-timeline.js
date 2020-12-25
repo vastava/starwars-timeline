@@ -135,6 +135,91 @@ function loadTimeline(choices, filter) {
 		var num_days = (endDate)- (startDate)
 		var w_axis = x(endDate)-x(startDate)
 
+
+	    var movieData = []
+
+	    movieData[0] = {"start": -32, "end": -19, "section": 2, "text": "Prequel Trilogy", "text_x": -25}
+	    movieData[1] = {"start": 0, "end": 4, "section": 3, "text": "Original Trilogy", "text_x": 0}
+	    movieData[2] = {"start": 34, "end": 35, "section": 3, "text": "Sequel Trilogy", "text_x": 34}	
+	    
+	    svg.selectAll(".myRects")
+	    	.data(movieData)
+	    	.enter()
+	    	.append("rect")
+	    	.attr("class", "movie-rect")
+	    	.attr("x", 0)
+	    	.attr("y", function(d) {return y(d.start)})		
+	    	.attr("width", fullWidth)
+	    	.attr("height", function(d) {return y(d.end) - y(d.start)})
+	    	.style("fill", function(d) {
+	    		if (d.text != "Sequel Trilogy") {
+	    			return media_color(d.text);
+	    		}
+	    		return "yellow";
+	    	})
+	    	.style("fill-opacity", 0.33)
+
+	    svg.selectAll(".myLabels")
+	    	.data(movieData)
+	    	.enter()
+	    	.append("text")
+	    	.attr("class", "movie-rect")
+	    	.attr("x", 0+5)
+	    	.attr("y", function(d) {return y(d.start)-5})		
+	    	.text(function(d) {return d.text});
+
+		var yrs = [-13000000000, -36453, -24500, -6900, -4250, -3976, -3959, -1100, -1000, -800, -200, -112, -82, -64, -52, -44, 20, 26, 40, 139]
+		var events = ["The galaxy is formed", "The Je'daii Order is created", "First great schism in the Jedi Order", "The Sith empire is discovered", "The Dark Jedi wage war on Coruscant", 
+			"The Mandalorian Wars begin", "The Jedi Civil War begins", "The Republic Dark Age begins", "Darth Bane establishes the Rule of Two", "Yoda begins to train Jedi", "Chewbacca is born",
+			"C-3PO is created", "Darth Sidious is born", "Qui-Gon Jinn becomes a Jedi Knight", "Jango Fett becomes Mandalore", "The Great Clan Wars begin",
+			"Luke Skywalker marries Mara Jade", "Ben Skywalker is born", "Jacen Solo falls to the dark side",
+			"Ania Solo ends Darth Wredd's insurgency"]	
+
+		yrs = yrs.map( function(x, i) { return {"year": x, "event": events[i]}});
+
+		svg.selectAll(".annotation")
+			.data(yrs)
+			.enter()
+			.append("line")
+			.attr("class", "svg-label")
+		 	.attr("x1", x(0) + sz*2)
+		 	.attr("x2", x(0) + 300)  
+		 	.attr("z-index", 0)
+		 	// .attr("y1", y(-13000000000)+sz*1.4/4)
+		 	.attr("y1", function(d) {return y(d.year) + sz*1.4/4})
+		 	// .attr("y2", y(-13000000000)+sz*1.4/4)
+		 	.attr("y2", function(d) {return y(d.year) + sz*1.4/4})
+		 	.attr("stroke", "white")
+		 	.attr("stroke-width", 1)
+
+		svg.selectAll(".annotation")
+			.data(yrs)
+			.enter()
+			.append("text")
+			.attr("class", "svg-label")
+		 	.attr("x", x(0) + sz*2)
+		 	.attr("x", x(0) + 300)  
+		 	// .attr("y", y(-13000000000)+sz*1.4/4)
+		 	.attr("y", function(d) {return y(d.year) + sz*1.4/4})
+		 	.text(function(d) {return d.event})	
+		 	.attr("text-anchor", "end") 
+		 	.attr("alignment-baseline", "hanging")	
+		 	.style("font-weight", "lighter")	
+
+		svg.selectAll(".annotation")
+			.data(yrs)
+			.enter()
+			.append("text")
+			.attr("class", "svg-label")
+		 	.attr("x", x(0) + sz*2)
+		 	.attr("x", x(0) + 300)  
+		 	// .attr("y", y(-13000000000)+sz*1.4/4 - 5)
+		 	.attr("y", function(d) {return y(d.year) + sz*1.4/4 - 5})
+		 	.text("13,000,000 BBY")	
+		 	.text(function(d) {return formatDate(d.year)})
+		 	.attr("text-anchor", "end") 
+		 	// .attr("alignment-baseline", "hanging")	
+		 	.style("font-weight", "lighter")
 	  	// var sz = (fullHeight - fullMargin.bottom - fullMargin.top)/years.length;
 
 	  	//width calc
@@ -146,7 +231,8 @@ function loadTimeline(choices, filter) {
 		 .html(function(d) {
 		  // console.log(d);
 		   return "<div>" +
-		           "<span style='color:black; font-weight:600'>" + formatDate(d.start) + "</span>" + 
+		           // "<span style='color:black; font-weight:600'>" + formatDate(d.start) + "</span>" +
+		           "<span style='color:black; font-weight:600'>" + d.yr_cleaned + "</span>"  +
 		           "<span style='color:" + color(d.era) + "; font-weight:600'> (" + d.era + ")</span><br/>" +
 		           "<span style='color:black'>" + d.event_cleaned + "</span><br/><br/>" +
 		           "<span style='color:black'>Source Text: " + d.source_text + "</span><br/>"
@@ -154,7 +240,7 @@ function loadTimeline(choices, filter) {
 		 })
 		svg.call(tip)	  
 
-		svg.selectAll("rect")
+		svg.selectAll(".eventRects")
 		 .data(data)
 		 .enter()
 		 .append("rect")
@@ -173,6 +259,7 @@ function loadTimeline(choices, filter) {
 		 })
 		 .attr("width", sz/1.4)
 		 .attr("height", sz/1.4)
+		 .attr("z-index", 10)
 		 // .attr("height", y.bandwidth()*.8)
 		 .style("fill", function(d) {
 		 	if (filter == "era_cleaned") {		 		
@@ -218,41 +305,7 @@ function loadTimeline(choices, filter) {
 		 	.attr("y2", fullHeight - fullMargin.top - fullMargin.bottom + 5)
 		 	.attr("stroke", "white")
 		 	.attr("stroke-width", 1)	
-		 	.attr("tranform", "translate(" + sz/2 + "," + -sz + ")")
-
-		// var yrs = []
-		// var events = []		 	
-		// riskNamesArr.map( function(x, i){
-  //   return {"name": x, "state": riskWorkflowStateArr[i]})        }
-
-		svg.append("line")
-			.attr("class", "svg-label")
-		 	.attr("x1", x(0) + sz*2)
-		 	.attr("x2", x(0) + 200)  
-		 	.attr("y1", y(-13000000000)+sz*1.4/4)
-		 	.attr("y2", y(-13000000000)+sz*1.4/4)
-		 	.attr("stroke", "white")
-		 	.attr("stroke-width", 1)
-
-		svg.append("text")
-			.attr("class", "svg-label")
-		 	.attr("x", x(0) + sz*2)
-		 	.attr("x", x(0) + 200)  
-		 	.attr("y", y(-13000000000)+sz*1.4/4)
-		 	.text("The galaxy is formed")	
-		 	.attr("text-anchor", "end") 
-		 	.attr("alignment-baseline", "hanging")	
-		 	.style("font-weight", "lighter")	
-
-		svg.append("text")
-			.attr("class", "svg-label")
-		 	.attr("x", x(0) + sz*2)
-		 	.attr("x", x(0) + 200)  
-		 	.attr("y", y(-13000000000)+sz*1.4/4 - 5)
-		 	.text("13,000,000 BBY")	
-		 	.attr("text-anchor", "end") 
-		 	// .attr("alignment-baseline", "hanging")	
-		 	.style("font-weight", "lighter")		 	
+		 	.attr("tranform", "translate(" + sz/2 + "," + -sz + ")")		 	
 
 
 		svg.append("text")
