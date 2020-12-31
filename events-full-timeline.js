@@ -183,6 +183,10 @@ function loadTimeline(choices, filter) {
 
 		yrs_canon = yrs_canon.map( function(x, i) { return {"year": x, "event": events_canon[i]}});
 
+
+
+		//Canon annotations 	
+
 		svg.selectAll(".annotation")
 			.data(yrs)
 			.enter()
@@ -226,9 +230,6 @@ function loadTimeline(choices, filter) {
 		 	.attr("text-anchor", "end") 
 		 	// .attr("alignment-baseline", "hanging")	
 		 	.style("font-weight", "lighter")
-
-		//Canon annotations 	
-
 		svg.selectAll(".annotation")
 			.data(yrs_canon)
 			.enter()
@@ -269,7 +270,9 @@ function loadTimeline(choices, filter) {
 		 	.text(function(d) {return formatDate(d.year)})
 		 	.attr("text-anchor", "start") 
 		 	// .attr("alignment-baseline", "hanging")	
-		 	.style("font-weight", "lighter")		 	
+		 	.style("font-weight", "lighter")	
+
+	 	
 	  	// var sz = (fullHeight - fullMargin.bottom - fullMargin.top)/years.length;
 
 	  	//width calc
@@ -387,6 +390,8 @@ loadTimeline(filter_list, "era_cleaned");
 var checkBox = d3.selectAll(".filter-check")
 
 checkBox.on("change", function () {
+	d3.selectAll('.movie-rect').remove();
+
 	var choices = []
 	var checkboxes = document.querySelectorAll('input[type=checkbox]')
 	var unchecked = []
@@ -423,15 +428,14 @@ checkBox.on("change", function () {
 			form_val = form[i].id;
 		}		
 	}	
-
-	console.log(choices)
-
 	loadTimeline(choices, form_val);	 
 })
 
 var radioButtons = d3.selectAll(".filter-radio")
 
 radioButtons.on("change", function() {	
+	d3.selectAll('.movie-rect').remove();
+
 	var choices = []
 	var checkboxes = document.querySelectorAll('input[type=checkbox]:checked')
 	for (var i = 0; i < checkboxes.length; i++) {
