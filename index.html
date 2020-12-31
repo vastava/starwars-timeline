@@ -7,14 +7,21 @@
 
 
 <!-- Create a div where the graph will take place -->
+<p class="intro">Episode I</p>
+<h1 class="intro title">THE LEGENDS-CANON WARS</h1>
+<p class="intro">It is a period of change. In 2012, the Walt Disney Company acquired Lucasfilm, and the sprawling Star Wars saga with it. Two years after the acquisition, Disney erased much of the Expanded Universe lore from the official canon — countless stories comprising novels, comics, video games, television shows, holiday specials, radio series, magazine issues and reference books are said to have no longer taken place. These stories — rebranded as “Star Wars legends” — live on in the minds of few, committed fans.</p>
+
 <h1>Star Wars Canon Timeline</h1>
+<p>Still, the current <i>Canon</i> timeline is vast, even without all of the events from <i>Legends</i> stories. Below is a recap of the major eras in the current Star Wars canon. Years are marked as either occurring before the Battle of Yavin (BBY), or after (ABY).</p><br>
 <!-- <p><i>Hover over a section of the timeline for a more detailed picture.</i></p> -->
 <div id="my_dataviz"></div>
 <h1>Canon vs. Legends, at a glance</h1>
+<p>But in comparing the <i>Canon</i> and <i>Legends</i> timelines, the difference emerges. The timespan of events covered in <i>Legends</i> media is far longer, and more in-depth than that of <i>Canon</i>. Whereas the <i>Canon</i> timeline primarily focuses on the conflicts between the Jedi and Sith, or the Republic and the Empire, the <i>Legends</i> timeline explores many different power structures and societies, and is continually marked by upheaval — whether it's the Indecta Era, Draggulch Period, or the Great Manifest Period, there is a great breadth of culture and history explored in the <i>Legends</i> stories.</p><br>
 <div id="events_timeline"></div>
 <div id="legends_timeline"></div>
 <!-- <h1>something</h1> -->
 <h1>Legends vs. Canon: the complete timeline</h1>
+<p>You may fully explore the differences between <i>Canon</i> and <i>Legends</i> events in this interactive timeline. <i>Canon</i> events are depicted on the right, and <i>Legends</i> events on the left. You may notice an emphasis on military research, space exploration and technology in <i>Legends</i> or a tightening of post-Battle of Yavin events in <i>Canon</i>.<br><br>
 <p class="center"><i>Hover over an event for more details.</i></p>
 <!-- <div id="my_dataviz"></div> -->
 <form id="color_filter" class="form-radio">
@@ -26,7 +33,7 @@
         <form method="post" action="" class="form"></form>
     </div>
 <div id="events_full_timeline"></div>
-<p><i>This project & analysis is still in progress. Data was scraped from <a href="https://starwars.fandom.com/wiki/Timeline_of_galactic_history">Wookieepedia</a>.</i></p>
+<p><i>Methodology: Data was scraped from <a href="https://starwars.fandom.com/wiki/Timeline_of_galactic_history">Wookieepedia</a>. Both the events and source attributions were scraped, and the attribution text was fuzzy matched to known Star Wars media in order to bucket sources into the types of media. ("Anthology Films," "Original Trilogy," etc.). Github link coming shortly.</i></p>
 
 <style>
 @import url(https://fonts.googleapis.com/css?family=News+Cycle:400,700);
@@ -57,9 +64,35 @@ h1, p, text, #text, #color_filter {
 }
 
 p {
+  text-align: left;
+  width: 80%;
+  margin: auto;
+}
+
+.source {
   text-align: right;
 }
 
+.intro {
+  display: flex;
+  justify-content: center;
+  position: relative;
+  /*height: 800px;*/
+  color: #feda4a;
+  font-family: 'Pathway Gothic One', sans-serif;
+  font-size: 150%;
+  font-weight: 600;
+  letter-spacing: 2px;
+  line-height: 150%;
+  perspective: 400px;
+  text-align: justify;
+}
+
+.title {
+  font-size: 60px;
+  text-align: center;
+  margin: 0
+}
 .center {
   text-align: center;
 }
