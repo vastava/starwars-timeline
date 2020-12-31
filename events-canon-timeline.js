@@ -14,7 +14,6 @@ var canonEvents = d3.select("#events_timeline")
 // Parse the Data
 d3.csv("starwars - Sheet6.csv", function(data) {
 
-	console.log(data)	
 	var formatDate = d=> d < 0 ? `${d3.format(",")(-d)} BBY` : `${d} ABY`
 
 	var num_cols = 1;
@@ -92,7 +91,6 @@ d3.csv("starwars - Sheet6.csv", function(data) {
 	 .style("fill", function(d) {
 	 		return color(d.era)
 	 })	   
-	console.log('sz' + sz*0.175)
 	 canonEvents.append("line")
 	 	.attr("x1", xOrd("0"))
 	 	.attr("x2", xOrd("0"))  

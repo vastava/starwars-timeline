@@ -14,7 +14,6 @@ var legendEvents = d3.select("#legends_timeline")
 // Parse the Data
 d3.csv("starwars - legends.csv", function(data) {
 
-	console.log(data)	
 	var formatDate = d=> d < 0 ? `${d3.format(",")(-d)} BBY` : `${d} ABY`
 
 	var num_cols = 5;
@@ -54,10 +53,6 @@ d3.csv("starwars - legends.csv", function(data) {
     .tickFormat(formatDate) 
     .tickValues(xOrd.domain().filter(function(d,i){ return !(i%50)}));
 
-    //szH 1.026937984496124
-    console.log((eventLegHeight - eventLegMargin.bottom - eventLegMargin.top)/d3.max(data, function(d) { return +d["y-key"]; }))
-    console.log(d3.max(data, function(d) { return +d["y-key"]; })*1.026937984496124)
-    console.log(eventLegHeight - eventLegMargin.bottom - eventLegMargin.top)
 
 	var startDate = d3.min(data, function(d) { return +d.start; });
 	var endDate = d3.max(data, function(d) { return +d.start; });
@@ -96,9 +91,6 @@ d3.csv("starwars - legends.csv", function(data) {
 	 .attr("width", sz*0.75)
 	 .attr("height", szH*0.75)
 	 .style("fill", function(d) {
-	 		if (d.era == "The Clone Wars") {
-	 			console.log(color(d.era))
-	 		}
 	 		return color(d.era)
 	 })
 	   
@@ -158,7 +150,6 @@ d3.csv("starwars - legends.csv", function(data) {
       var x = offset      
       offset += nodeWidth(this) + spacingBetweenLegend
       var ret;
-      console.log(nextLine)
       if(offset >= target && nextLine) {
           offset = nodeWidth(this) + spacingBetweenLegend + eventLegMarginLeft;
           yValue +=20;

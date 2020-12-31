@@ -183,12 +183,14 @@ function loadTimeline(choices, filter) {
 
 		yrs_canon = yrs_canon.map( function(x, i) { return {"year": x, "event": events_canon[i]}});
 
-
+		console.log(years)
+		console.log(yrs)
+		console.log(yrs.filter(function(d) {return years.includes(d.year.toString())}))
 
 		//Canon annotations 	
 
 		svg.selectAll(".annotation")
-			.data(yrs)
+			.data(yrs.filter(function(d) {return years.includes(d.year.toString())}))
 			.enter()
 			.append("line")
 			.attr("class", "svg-label")
@@ -203,7 +205,7 @@ function loadTimeline(choices, filter) {
 		 	.attr("stroke-width", 1)
 
 		svg.selectAll(".annotation")
-			.data(yrs)
+			.data(yrs.filter(function(d) {return years.includes(d.year.toString())}))
 			.enter()
 			.append("text")
 			.attr("class", "svg-label")
@@ -217,7 +219,7 @@ function loadTimeline(choices, filter) {
 		 	.style("font-weight", "lighter")	
 
 		svg.selectAll(".annotation")
-			.data(yrs)
+			.data(yrs.filter(function(d) {return years.includes(d.year.toString())}))
 			.enter()
 			.append("text")
 			.attr("class", "svg-label")
@@ -231,7 +233,7 @@ function loadTimeline(choices, filter) {
 		 	// .attr("alignment-baseline", "hanging")	
 		 	.style("font-weight", "lighter")
 		svg.selectAll(".annotation")
-			.data(yrs_canon)
+			.data(yrs_canon.filter(function(d) {return years.includes(d.year.toString())}))
 			.enter()
 			.append("line")
 			.attr("class", "svg-label")
@@ -245,7 +247,7 @@ function loadTimeline(choices, filter) {
 		 	.attr("stroke-width", 1)
 
 		svg.selectAll(".annotation")
-			.data(yrs_canon)
+			.data(yrs_canon.filter(function(d) {return years.includes(d.year.toString())}))
 			.enter()
 			.append("text")
 			.attr("class", "svg-label")
@@ -259,7 +261,7 @@ function loadTimeline(choices, filter) {
 		 	.style("font-weight", "lighter")	
 
 		svg.selectAll(".annotation")
-			.data(yrs_canon)
+			.data(yrs_canon.filter(function(d) {return years.includes(d.year.toString())}))
 			.enter()
 			.append("text")
 			.attr("class", "svg-label")
@@ -406,8 +408,6 @@ checkBox.on("change", function () {
 	}
 
 	for (var i = 0; i <unchecked.length; i ++) {
-		console.log(filter_list)
-		console.log(unchecked[i])
 		d3.select("#" + unchecked[i].split(' ').join('_') + "sabers").selectAll(".bar").style("box-shadow", "none").style("border-right-color", "#d6d6d6")
 	}
 
